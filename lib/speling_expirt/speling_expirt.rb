@@ -1,44 +1,79 @@
 module SpelingExpirt
   class SpelingExpirt
+    attr_reader :letters
+    attr_reader :words
+    attr_reader :start
 
-    # You may initialize you player but the the initialize method must take NO paramters.
-    # The player will only be instantiated once, and will play many games.
-    def initialize
+    def word_list
+      @@all_words
     end
-
-    # Before starting a game, this method will be called to inform the player of all the possible words that may be
-    # played.
+    
     def word_list=(list)
+      @@all_words = list
+    end
+    
+    def new_game(left)
+      @start = true
+      @letters = ('a'..'z').to_a
+      @words = @@all_words.dup
     end
 
-    # a new game has started.  The number of guesses the player has left is passed in (default 6),
-    # in case you want to keep track of it.
-    def new_game(guesses_left)
-      @left = ('a'..'z').to_a
+    def guess(secret, left)
+      trim_by_size(secret) if @start
+      @start = false
+      trim_by_letter(secret)
+      guess = get_best_letter
+      @letters.delete(guess)
+      return guess
     end
-
-    # Each turn your player must make a guess.  The word will be a bunch of underscores, one for each letter in the word.
-    # after your first turn, correct guesses will appear in the word parameter.  If the word was "shoes" and you guessed "s",
-    # the word parameter would be "s___s", if you then guess 'o', the next turn it would be "s_o_s", and so on.
-    # guesses_left is how many guesses you have left before your player is hung.
-    def guess(word, guesses_left)
-      @left.shift
+    
+    def get_best_letter
+      @letters.map { |l| [count_hits(l), l] }.sort.last[1]
     end
-
-    # notifies you that your last guess was incorrect, and passes your guess back to the method
-    def incorrect_guess(guess)
+    
+    def count_hits(letter, hits = 0)
+      @words.each do |w|
+        # hits = add_if_hit(w, letter, hits)
+        hits += 1 if w.include?(letter)
+      end
+      hits
     end
-
-    # notifies you that your last guess was correct, and passes your guess back to the method
+    
+    # def add_if_hit(word, letter, hits)
+    #   word.include?(letter) ? hits + 1 : hits
+    # end
+    
     def correct_guess(guess)
+      Thread.new { @words.reject! { |w| !w.include?(guess) } }
     end
-
-    # you lost the game.  The reason is in the reason parameter
+    
+    def incorrect_guess(guess)
+      Thread.new { @words.reject! { |w| w.include?(guess) } }
+    end
+    
+    def trim_by_size(secret)
+      @words.reject! { |w| w.size != secret.size }
+    end
+    
+    def trim_by_letter(secret)
+      @words.reject! { |w| !might_match?(secret, w) }
+    end
+    
+    def might_match?(secret, word)
+      0.upto(secret.size - 1) do |i|
+        return false if bad_letter?(secret, word, i)
+      end
+      return true
+    end
+    
+    def bad_letter?(secret, word, i)
+      c = secret[i]
+      c.chr != "_" && c != word[i]
+    end
+    
     def fail(reason)
     end
 
-    # The result of the game, it'll be one of 'win', 'loss', or 'fail'.
-    # The spelled out word will be provided regardless of the result.
     def game_result(result, word)
     end
   end
