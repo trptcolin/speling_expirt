@@ -6,53 +6,33 @@ describe SpelingExpirt::SpelingExpirt do
   it "should be instantiable with no parameters" do
     lambda { SpelingExpirt::SpelingExpirt.new }.should_not raise_error
   end
-
+  
   before(:each) do
     @speller = SpelingExpirt::SpelingExpirt.new
+    @speller.word_list = ["foo", "bar", "spelling", "master"]
   end
 
   it "should hold onto the word list" do
-    @speller.word_list = ["spelling"]
-    
-    @speller.word_list.should == ["spelling"]
+    @speller.word_list.should == ["foo", "bar", "spelling", "master"]
   end
   
   describe "new game" do
     before(:each) do
-      @speller.word_list = ["foo", "bar"]
       @speller.new_game(6)
     end
 
-    it "should be a new game" do
-      @speller.start.should == true
-    end
-
-    it "should set the letters remaining" do
-      @speller.letters.should == ("a".."z").to_a
-    end
-
     it "should set the in game word list" do
-      @speller.words.should == ["foo", "bar"]
+      @speller.words.should == @speller.word_list
     end
 
     it "should reset the in game word list" do
-      @speller.word_list = ["foo", "bar"]
       @speller.new_game(6)
       @speller.incorrect_guess("f")
       
       @speller.new_game(6)
       
-      @speller.words.should == ["foo", "bar"]
+      @speller.words.should == @speller.word_list
     end
-  end
-  
-  it "should not be a new game" do
-    @speller.word_list = ["foo", "bar"]
-    @speller.new_game(6)
-    
-    @speller.guess("___", 6)
-
-    @speller.start.should == false
   end
   
   it "should fail" do
@@ -65,26 +45,19 @@ describe SpelingExpirt::SpelingExpirt do
   
   describe "in a new game" do
     before(:each) do
-      @speller.word_list = ["spelling", "master"]
       @speller.new_game(6)
     end
     
     it "should filter words based on an incorrect guess" do
       @speller.incorrect_guess("a")
       
-      @speller.words.should == ["spelling"]
+      @speller.words.should == ["foo", "spelling"]
     end
     
     it "should filter words based on a correct guess" do
       @speller.correct_guess("a")
       
-      @speller.words.should == ["master"]
-    end
-    
-    it "should remove letter remaining after a guess" do
-      guessed_letter = @speller.guess("______", 6)
-      
-      @speller.letters.include?(guessed_letter).should == false
+      @speller.words.should == ["bar", "master"]
     end
   
     it "should filter words based on the word length" do
@@ -93,30 +66,36 @@ describe SpelingExpirt::SpelingExpirt do
       @speller.words.should == ["spelling"]
     end
     
-    it "should filter words based on the known letters" do
-      @speller.word_list << "disaster"
-      @speller.new_game(6)
+    it "should filter words based on the known ltrs" do
+      @speller.words << "disaster"
+      @speller.words << "deluging"
+      @speller.guess("________", 6)
 
       @speller.guess("d_______", 6)
       
-      @speller.words.should == ["disaster"]
+      @speller.words.should == ["disaster", "deluging"]
     end
     
     it "should count hits" do
-      @speller.word_list = ["foo", "bar"]
       @speller.new_game(6)
       
-      @speller.count_hits("a").should == 1
-      @speller.count_hits("z").should == 0
+      @speller.hits("a").should == 2
+      @speller.hits("z").should == 0
     end
   
-    it "should guess the most frequently occurring letter" do
-      @speller.word_list = ["zanzibar", "zooology"]
+    it "should guess the most frequently occurring ltr" do
       @speller.new_game(6)
-
+      @speller.words << "zanzibar"
+      @speller.words << "zooology"
+      @speller.words << "zephyryu"
+    
       @speller.guess("________", 6).should == "z"
     end
-
+    
+    it "should guess twice" do
+      @speller.new_game(6)
+      @speller.guess("________", 6)
+      @speller.guess("________", 6).should == "p"
+    end
   end
-  
 end
