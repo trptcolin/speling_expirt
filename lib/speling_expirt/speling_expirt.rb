@@ -1,37 +1,37 @@
 module SpelingExpirt
   class SpelingExpirt
-    attr_accessor :words
-
+    attr_reader :words
+    
     def word_list
-      @@all_words
+      @@words
     end
     
-    def word_list=(list)
-      @@all_words ||= list
+    def word_list=(l)
+      @@words ||= l
     end
     
-    def new_game(left)
+    def new_game(l)
       @start = true
       @ltrs = ('a'..'z').to_a
-      @words = @@all_words.dup
+      @words = @@words.dup
     end
-
-    def guess(secret, left)
-      trim_opening(secret)
+    
+    def guess(s, l)
+      trim_opening(s)
       ltr = hits_on_ltrs.sort[-1][1]
       @ltrs.delete(ltr)
       return ltr
     end
     
-    def trim_opening(secret)
-      @start ? (@start = false) || trim_by_size(secret) : trim_by_ltr(secret)
+    def trim_opening(s)
+      @start ? (@start = false) || trim_by_size(s) : trim_by_ltr(s)
     end
     
     def hits_on_ltrs
       @ltrs.dup.map { |l| [hits(l), l] }
     end
     
-    def hits(ltr, hits = 0)
+    def hits(ltr, hits=0)
       @words.each { |w| w.index(ltr) && hits += 1 }
       filter_ltrs_for_hits(hits, ltr)
       hits
@@ -41,51 +41,51 @@ module SpelingExpirt
       hits == 0 && @ltrs.delete(ltr)
     end
     
-    def correct_guess(guess)
-       @words[1] != nil && spawn_for_good(guess)
+    def correct_guess(g)
+       @words[1] != nil && spawn_good(g)
     end
     
-    def spawn_for_good(guess)
-      Thread.new { trim_good(guess) }
+    def spawn_good(g)
+      Thread.new { trim_good(g) }
     end
     
-    def trim_good(guess)
-      @words.reject! { |w| !w.index(guess) }
+    def trim_good(g)
+      @words.reject! { |w| !w.index(g) }
     end
     
-    def incorrect_guess(guess)
-      Thread.new { trim_bad(guess) }
+    def incorrect_guess(g)
+      Thread.new { trim_bad(g) }
     end
     
-    def trim_bad(guess)
-      @words.reject! { |w| w.index(guess) }
+    def trim_bad(g)
+      @words.reject! { |w| w.index(g) }
     end
     
-    def trim_by_size(secret)
-      @words.reject! { |w| w.size != secret.size }
+    def trim_by_size(s)
+      @words.reject! { |w| w.size != s.size }
     end
     
-    def trim_by_ltr(secret)
-      @words.reject! { |w| no_match?(secret, w) }
+    def trim_by_ltr(s)
+      @words.reject! { |w| no_match?(s, w) }
     end
     
-    def no_match?(secret, w)
+    def no_match?(s, w)
       i = 0
-      while (i < secret.size) do
-        return true if bad_ltr?(secret, w, i)
+      while (i < s.size) do
+        return true if bad_ltr?(s, w, i)
         i+= 1
       end
       false
     end
     
-    def bad_ltr?(secret, word, i)
-      secret[i] != 95 && secret[i] != word[i]
+    def bad_ltr?(s, w, i)
+      s[i] != 95 && s[i] != w[i]
     end
     
-    def fail(reason)
+    def fail(r)
     end
-
-    def game_result(result, word)
+    
+    def game_result(r, w)
     end
   end
 end
