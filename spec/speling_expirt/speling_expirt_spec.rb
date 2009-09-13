@@ -76,13 +76,6 @@ describe SpelingExpirt::SpelingExpirt do
       @speller.words.should == ["disaster", "deluging"]
     end
     
-    it "should count hits" do
-      @speller.new_game(6)
-      
-      @speller.hits("a").should == 2
-      @speller.hits("z").should == 0
-    end
-  
     it "should guess the most frequently occurring ltr" do
       @speller.new_game(6)
       @speller.words << "zanzibar"
@@ -95,7 +88,7 @@ describe SpelingExpirt::SpelingExpirt do
     it "should guess twice" do
       @speller.new_game(6)
       @speller.guess("________", 6)
-      (@speller.guess("________", 6)).should == "s"
+      (@speller.guess("________", 6)).should == "e"
     end
   end
 end
