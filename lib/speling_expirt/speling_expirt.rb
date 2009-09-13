@@ -24,6 +24,10 @@ module SpelingExpirt
     
     def correct_guess(g)
       @words.reject! { |w| !w.include?(g) }
+      trim_known_bad_ltrs
+    end
+    
+    def trim_known_bad_ltrs
       @words.size == 1 && @ltrs.reject! { |l| !@words[0].include?(l) }
     end
     
@@ -53,13 +57,13 @@ module SpelingExpirt
       @words.reject! { |w| w.size != size }
     end
     
-    def trim_by_ltr(s, size = s.size)
-      @words.reject! { |w| no_match?(s, w, size) }
+    def trim_by_ltr(s, end_i = s.size - 1)
+      @words.reject! { |w| no_match?(s, w, end_i) }
     end
     
-    def no_match?(s, w, size)
-      0.upto(size - 1) do |i|
-        return true if bad_ltr?(s, w, i)
+    def no_match?(s, w, e)
+      0.upto(e) do |i|
+        bad_ltr?(s, w, i) and return true
       end
       false
     end
