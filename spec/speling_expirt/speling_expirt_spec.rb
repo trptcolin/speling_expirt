@@ -95,7 +95,7 @@ describe SpelingExpirt::SpelingExpirt do
     it "should guess twice" do
       @speller.new_game(6)
       @speller.guess("________", 6)
-      @speller.guess("________", 6).should == "p"
+      (@speller.guess("________", 6)).should == "s"
     end
   end
 end
