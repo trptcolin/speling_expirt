@@ -1,75 +1,76 @@
 module SpelingExpirt
   class SpelingExpirt
-    attr_reader :words
-    
-    def word_list
-      @@words
+    def initialize
+      @all_letters = ('a'..'z').to_a
     end
-    
+
     def word_list=(l)
-      @@words ||= l
-      @words ||= []
+      set_all_words
+      l = l.dup
+      while (w = l.pop)
+        add_word(w)
+      end
     end
-    
+
     def new_game(l)
-      @start = true
-      @ltrs = ('a'..'z').to_a
-      @words.replace(@@words)
+      @letters = @all_letters.dup
+      @words = nil
     end
-    
+
     def guess(s, l)
-      trim_opening(s)
-      @ltrs.delete(@ltrs.sort_by{|l| hits(l)}.last)
+      @words ? trim_non_matchers(s) : right_sized_words(s)
+      @letters.delete(best_letter)
     end
-    
+
     def correct_guess(g)
       @words.reject! { |w| !w.include?(g) }
-      trim_known_bad_ltrs
     end
-    
-    def trim_known_bad_ltrs
-      @words.size == 1 && @ltrs.reject! { |l| !@words[0].include?(l) }
-    end
-    
+
     def incorrect_guess(g)
       @words.reject! { |w| w.include?(g) }
     end
-    
+
     def fail(r)
     end
-    
+
     def game_result(r, w)
     end
     
-    private
-    def trim_opening(s)
-      @start ? ((@start = false) || trim_by_size(s)) : trim_by_ltr(s)
+    def matcher(s)
+      /^#{s.gsub("_", "[#{@letters}]")}$/
     end
     
-    def hits(ltr, hits=0)
+    private
+    
+    def add_word(w)
+      @all_words_by_letter[w.size] << w
+    end
+    
+    def set_all_words
+      @all_words_by_letter = Hash.new {|h,k| h[k] = [] }
+    end
+
+    def trim_non_matchers(s)
+      r = matcher(s)
+      @words.reject! { |w| !(w =~ r) }
+    end
+    
+    def right_sized_words(s)
+      @words = @all_words_by_letter[s.size].dup
+    end
+    
+    def best_letter
+      @letters.dup.map{ |l| [hits(l), l] }.max[1]
+    end
+
+    def hits(ltr)
+      hits = 0
       for w in @words
         w.include?(ltr) && hits += 1
       end
+      hits == 0 && @letters.delete(ltr)
       hits
     end
     
-    def trim_by_size(s, size = s.size)
-      @words.reject! { |w| w.size != size }
-    end
-    
-    def trim_by_ltr(s, end_i = s.size - 1)
-      @words.reject! { |w| no_match?(s, w, end_i) }
-    end
-    
-    def no_match?(s, w, e)
-      0.upto(e) do |i|
-        bad_ltr?(s, w, i) and return true
-      end
-      false
-    end
-    
-    def bad_ltr?(s, w, i, c = s[i])
-      c != 95 && c != w[i]
-    end
   end
 end

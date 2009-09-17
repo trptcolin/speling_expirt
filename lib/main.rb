@@ -1,3 +1,5 @@
+$: << File.dirname(__FILE__)
+
 require 'hangman/hangman_engine'
 require 'hangman/mock_ui'
 require 'speling_expirt/speling_expirt'

@@ -81,7 +81,7 @@ module Hangman
     end
 
     def over?
-      puts "HangmanEngine: @word = #{@word}" if dead?
+      puts "missed word = #{@word}" if dead?
       dead? || won?
     end
 
